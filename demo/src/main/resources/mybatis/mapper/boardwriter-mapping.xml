@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+ 
+<mapper namespace="boardmapper.BoardWriterMapper">
+	<resultMap id="boardwriterinfo" type="boardmapper.BoardWriterDTO" >
+	  <id column="seq" property="seq"/> <!-- pk seq컬럼값을  BoardWriterDTO seq 변수에 자동 저장 -->
+	  <result column="title" property="title"/>
+	  <result column="contents" property="contents"/>
+	  <result column="viewcount" property="viewcount"/>
+	  <result column="writingtime" property="writingtime"/>
+	  <result column="f1" property="file1"/>	  	
+	  <association property="writerdto" javaType="boardmapper.MemberDTO" >
+	  	<result column="id" property="id"/>
+	  	<result column="name" property="name"/>
+	  	<result column="email" property="email"/>
+	  	<result column="phone" property="phone"/>
+	  	<result column="regdate2" property="regdate"/>
+	  </association>
+	</resultMap>
+	
+	<select id="getBoardWriterInfo" resultMap="boardwriterinfo">
+	 select seq, title, contents, viewcount, writingtime, nvl(file1, '첨부파일없음') f1,  id, name, email, phone, 
+	 to_char(regdate, 'yyyy"년도 "MM"월 "dd"일"') regdate2
+	 from board b join members m on b.writer=m.id
+	 where seq=#{seq}
+	</select>
+
+  <resultMap id = "memberBoardInfo" type ="boardmapper.MemberBoardDTO">
+            <id property="id" column="id"/>
+            <result property="name" column="name"/>
+            <result property="pw" column="pw"/>
+            <result property="phone" column="phone"/>
+            <result property="email" column="email"/>
+            <result property="regdate" column="regdate"/>
+            <collection column="id" property="boarddtolist" javaType="java.util.List" 
+            ofType="boarddto" select="getMemberBoardInfo">
+            	<id column="seq" property="seq" />
+            	<result column="title" property="title" />
+  	  			<result column="contents" property="contents"/>
+	  			<result column="viewcount" property="viewcount"/>
+	  			<result column="writingtime" property="writingtime"/>  
+	  			<!-- pw - 0 -->        	
+            </collection>
+  </resultMap>
+
+<select id="getMemberBoardInfo" resultType="boarddto">
+	select * from board where writer=#{id} order by writingtime desc
+</select>
+
+<select id="getMemberAndBoardInfo" resultMap="memberBoardInfo">
+   select * from members where id=#{id} 
+</select>
+ </mapper> 
+  
